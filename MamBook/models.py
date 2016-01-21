@@ -32,7 +32,7 @@ class Baby(models.Model):
 
 
 class Achievement(models.Model):  # all achievements in db
-    class Meta:
+    class Meta:                   # parsed
         db_table = 'achievement'
 
     title = models.CharField(max_length=256)
@@ -59,7 +59,7 @@ class BabyAchievements(models.Model):  # relations of babies and their achieveme
         return '%s - %s' % (self.id_child.name, self.id_achievement.title)
 
 
-class Category(models.Model):
+class Category(models.Model):  # parsed
     class Meta:
         db_table = 'category'
 
@@ -69,7 +69,7 @@ class Category(models.Model):
         return self.name
 
 
-class Progress(models.Model):
+class Progress(models.Model):  # parsed
     class Meta:
         db_table = 'progress'
 
@@ -86,7 +86,7 @@ class Progress(models.Model):
         return self.title
 
 
-class SelfDevelopment(models.Model):
+class SelfDevelopment(models.Model):  # parsed
     class Meta:
         db_table = 'self-development'
 

@@ -13,9 +13,10 @@ Including another URLconf
 """
 
 from django.conf.urls import url
+from MamBook import views
 
 urlpatterns = [
-    url(r'', ''),
+    url(r'', views.initialize),
 
 ]
 
