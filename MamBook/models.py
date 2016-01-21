@@ -42,7 +42,7 @@ class Achievement(models.Model):  # all achievements in db
     number = models.IntegerField()
 
     def __str__(self):
-        return self.achievement_name
+        return self.title
 
 
 class BabyAchievements(models.Model):  # relations of babies and their achievements
