@@ -1,25 +1,25 @@
+{% load staticfiles %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title></title>
+    <title>MamBook API Server</title>
+    <link rel="stylesheet" type="text/css" href="{% static "bootstrap/css/bootstrap.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "bootstrap/css/bootstrap-responsive.css" %}">
 </head>
 <body>
-    <h3>Well done!</h3>
-    <h4>{{ category_set }}</h4>
-    {% for value in values %}
-        <table>
-            <tr>
-                <td>{{ year }}</td>
-                <td>{{ month }}</td>
-                <td>{{ number }}</td>
-                <td>{{ title }}</td>
-                <td>{{ text }}</td>
-                <td>{{ category }}</td>
-            </tr>
-        </table>
-        <p>{{ value }}</p>
-    {% endfor %}
-
+    <div class="container">
+        <div class="row">
+            <a style="text-decoration: none" href=""><h2 class="page-header text-info">MamBook API Server</h2></a>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="span3">
+                <h4>Well done!</h4>
+                <h5>{{ json }}</h5>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
