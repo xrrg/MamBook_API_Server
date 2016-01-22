@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
 from MamBook.models import *
 import xlrd
 import json
 import unicodedata
-# Create your views here.
+from django.http import JsonResponse, HttpResponse, Http404
+from django.contrib.auth.models import User
+from django.contrib import auth
+import hashlib
+import random
+
 
 
 def parse():  # parse data from xml file
@@ -136,3 +140,47 @@ def get_selfdevelopment(request):   # return json-object self-development
     json_dict['records'] = records_dict
 
     return HttpResponse(json.dumps(json_dict, indent=4), content_type='application/json')
+
+
+def register(request):
+    if request.method == 'POST':
+        email = request.POST['email']
+        username = request.POST['username']
+        password = request.POST['password']
+        new_user = User.objects.create_user(username=username, password=password, email=email)
+        new_user.save()
+        salt = hashlib.sha1(str(random.random()).encode('utf-8')).hexdigest()[:5]
+        salted_username = salt + new_user.username
+        token = hashlib.sha1(salted_username.encode('utf-8')).hexdigest()
+        new_profile = Profile(owner=new_user, csrf_token=token)
+        new_profile.save()
+
+        return HttpResponse("new user was registered successfully")
+    else:
+        raise Http404()
+
+
+def log_in(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = auth.authenticate(username=username, password=password)
+        if user is not None:
+            auth.login(request, user)
+
+            return HttpResponse("success")
+        else:
+            return HttpResponse("wrong")
+    else:
+        raise Http404()
+
+
+def log_out(request):
+    if request.method == 'POST':
+        user = auth.get_user(request)
+        if user:
+            auth.logout(request)
+
+            return HttpResponse("logged out")
+    else:
+        raise Http404()
