@@ -11,7 +11,6 @@ import hashlib
 import random
 
 
-
 def parse():  # parse data from xml file
     rd = xlrd.open_workbook('/home/gambrinius/PycharmProjects/MamBook_API_Server/Развивайка0-3.xls',
                             formatting_info=True)  # change file name to current parse
@@ -59,6 +58,28 @@ def initialize(request):  # load main.html
 
     # context['json'] = json.JSONEncoder().encode(Progress.objects.get(id=7437).title)
     return render(request, 'main.html', context)
+
+
+def auth_check(request, baby_id, request_token):
+    """
+    Correct input and permissions check. Returns user profile in case of success as dictionary and returns int '1'
+    in case of fault.
+    """
+    baby_profile = Baby.objects.get(pk=baby_id)
+    baby_profile_token = baby_profile.parent.csrf_token
+    user = auth.get_user(request)
+
+    if user.is_authenticated():
+        try:
+            user_profile = Profile.objects.get(owner=user)
+        except Exception:
+            return 1
+        else:
+            if user_profile.csrf_token == request_token and user_profile.csrf_token == baby_profile_token:
+                objects = dict()
+                objects['user_profile'] = user_profile
+                objects['baby_profile'] = baby_profile
+                return objects
 
 
 def get_achievement(request):   # return json-object achievement
@@ -114,7 +135,7 @@ def get_progress(request):  # return json-object progress
             'year': progress_records[i].year,
             'month': progress_records[i].month,
             'day': progress_records[i].day,
-            'category': Category.objects.get(id=progress_records[i].category_id),
+            'category': Category.objects.get(id=progress_records[i].category_id).name,
             'do_advice': progress_records[i].do_advice,
             'not_do_advice': progress_records[i].not_do_advice,
         }
@@ -142,6 +163,35 @@ def get_selfdevelopment(request):   # return json-object self-development
     return HttpResponse(json.dumps(json_dict, indent=4), content_type='application/json')
 
 
+def get_baby_achievement(request, baby_id, request_token):   # return json-object achievement for certain profile
+    objects = auth_check(request=request, baby_id=baby_id, request_token=request_token)
+    if objects and objects != 1:
+        records = BabyAchievements.objects.filter(id_child=objects['baby_profile'])
+        json_dict = dict()
+        json_dict['table'] = 'baby_achievement'
+        json_dict['version'] = VersionsControl.objects.get(table_name="achievement").latest_version
+        json_dict['records_number'] = len(records)
+        json_dict['baby_name'] = objects['baby_profile'].name
+
+        records_dict = dict()
+        for i in range(0, len(records)):
+            records_dict[i+1] = {
+                'title': records[i].id_achievement.title,
+                'content': records[i].id_achievement.content,
+                'year': records[i].id_achievement.year,
+                'month': records[i].id_achievement.month,
+                'number': records[i].id_achievement.number,
+                'activation_date': str(records[i].activation_date),
+                'status': records[i].status,
+                'is_activate': records[i].is_activate,
+            }
+        json_dict['records'] = records_dict
+
+        return HttpResponse(json.dumps(json_dict, indent=4), content_type='application/json')
+    else:
+        return JsonResponse({"status": "error"})
+
+
 def register(request):
     if request.method == 'POST':
         email = request.POST['email']
@@ -155,9 +205,9 @@ def register(request):
         new_profile = Profile(owner=new_user, csrf_token=token)
         new_profile.save()
 
-        return HttpResponse("new user was registered successfully")
+        return JsonResponse({"status": "success"})
     else:
-        raise Http404()
+        return JsonResponse({"status": "error"})
 
 
 def log_in(request):
@@ -168,19 +218,29 @@ def log_in(request):
         if user is not None:
             auth.login(request, user)
 
-            return HttpResponse("success")
+            return JsonResponse({"status": "success"})
         else:
-            return HttpResponse("wrong")
+            return JsonResponse({"status": "auth_error"})
     else:
-        raise Http404()
+        return JsonResponse({"status": "error"})
 
 
 def log_out(request):
-    if request.method == 'POST':
+    if request.method == 'GET':
         user = auth.get_user(request)
         if user:
             auth.logout(request)
 
-            return HttpResponse("logged out")
+            return JsonResponse({"status": "success"})
     else:
-        raise Http404()
+        return JsonResponse({"status": "error"})
+
+
+def upload_new_achievement(request, baby_id, request_token):
+    if request.method == 'POST':
+        objects = auth_check(request=request, baby_id=baby_id, request_token=request_token)
+        if objects:
+            pass
+
+    else:
+        return JsonResponse({"status": "error"})
