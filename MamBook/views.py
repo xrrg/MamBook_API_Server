@@ -163,33 +163,38 @@ def get_selfdevelopment(request):   # return json-object self-development
     return HttpResponse(json.dumps(json_dict, indent=4), content_type='application/json')
 
 
-def get_baby_achievement(request, baby_id, request_token):   # return json-object achievement for certain profile
-    objects = auth_check(request=request, baby_id=baby_id, request_token=request_token)
-    if objects and objects != 1:
-        records = BabyAchievements.objects.filter(id_child=objects['baby_profile'])
-        json_dict = dict()
-        json_dict['table'] = 'baby_achievement'
-        json_dict['version'] = VersionsControl.objects.get(table_name="achievement").latest_version
-        json_dict['records_number'] = len(records)
-        json_dict['baby_name'] = objects['baby_profile'].name
+def get_baby_achievement(request):   # return json-object achievement for certain profile
+    if request.method == 'POST':
+        baby_id = request.POST['baby_id']
+        request_token = request.POST['request_token']
+        objects = auth_check(request=request, baby_id=baby_id, request_token=request_token)
+        if objects and objects != 1:
+            records = BabyAchievements.objects.filter(id_child=objects['baby_profile'])
+            json_dict = dict()
+            json_dict['table'] = 'baby_achievement'
+            json_dict['version'] = VersionsControl.objects.get(table_name="achievement").latest_version
+            json_dict['records_number'] = len(records)
+            json_dict['baby_name'] = objects['baby_profile'].name
 
-        records_dict = dict()
-        for i in range(0, len(records)):
-            records_dict[i+1] = {
-                'title': records[i].id_achievement.title,
-                'content': records[i].id_achievement.content,
-                'year': records[i].id_achievement.year,
-                'month': records[i].id_achievement.month,
-                'number': records[i].id_achievement.number,
-                'activation_date': str(records[i].activation_date),
-                'status': records[i].status,
-                'is_activate': records[i].is_activate,
-            }
-        json_dict['records'] = records_dict
+            records_dict = dict()
+            for i in range(0, len(records)):
+                records_dict[i+1] = {
+                    'title': records[i].id_achievement.title,
+                    'content': records[i].id_achievement.content,
+                    'year': records[i].id_achievement.year,
+                    'month': records[i].id_achievement.month,
+                    'number': records[i].id_achievement.number,
+                    'activation_date': str(records[i].activation_date),
+                    'status': records[i].status,
+                    'is_activate': records[i].is_activate,
+                }
+            json_dict['records'] = records_dict
 
-        return HttpResponse(json.dumps(json_dict, indent=4), content_type='application/json')
+            return HttpResponse(json.dumps(json_dict, indent=4), content_type='application/json')
+        else:
+            return JsonResponse({"status": "error"})
     else:
-        return JsonResponse({"status": "error"})
+        return JsonResponse({"status": "wrong_method"})
 
 
 def register(request):
@@ -236,8 +241,10 @@ def log_out(request):
         return JsonResponse({"status": "error"})
 
 
-def upload_new_achievement(request, baby_id, request_token):
+def upload_new_achievement(request):
     if request.method == 'POST':
+        baby_id = request.POST['baby_id']
+        request_token = request.POST['request_token']
         objects = auth_check(request=request, baby_id=baby_id, request_token=request_token)
         if objects:
             pass
