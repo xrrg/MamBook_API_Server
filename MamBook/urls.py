@@ -16,7 +16,7 @@ from django.conf.urls import url
 from MamBook import views
 
 urlpatterns = [
-    url(r'baby_achievement.json/(?P<baby_id>[0-9]+)/(?P<request_token>.*)/$', views.get_baby_achievement),
+    url(r'baby_achievement.json/', views.get_baby_achievement),
     url(r'login/', views.log_in),
     url(r'logout/', views.log_out),
     url(r'register/', views.register),
