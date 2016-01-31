@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'register/', views.register),
     url(r'login/', views.log_in),
     url(r'logout/', views.log_out),
+    url(r'new_achievement/', views.upload_new_achievement),
     url(r'baby_achievement.json/', views.get_baby_achievement),
     url(r'achievement.json/', views.get_achievement),
     url(r'category.json/', views.get_category),
@@ -27,4 +28,3 @@ urlpatterns = [
     url(r'create_baby_profile/', views.upload_baby_profile),
     url(r'', views.initialize),
 ]
-

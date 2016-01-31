@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, Http404
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
 from MamBook.models import *
 from django.contrib import auth
 import hashlib
@@ -263,11 +264,20 @@ def log_out(request):
 
 def upload_new_achievement(request):
     if request.method == 'POST':
-        baby_id = request.POST['baby_id']
-        request_token = request.POST['request_token']
+        data = json.loads(request.POST.get('json_object'))
+        baby_id = data['baby_id']
+        request_token = data['request_token']
         objects = auth_check(request=request, baby_id=baby_id, request_token=request_token)
         if objects:
-            pass
+            new_record = BabyAchievements(id_child=Baby.objects.get(pk=baby_id),
+                                          id_achievement=Achievement.objects.get(pk=data['achievement_id']),
+                                          activation_date=timezone.now(),
+                                          status=data['status'],
+                                          is_activate=True)
+            new_record.save()
+            return JsonResponse({"status": "success"})
+        else:
+            raise Http404()
 
     else:
         return JsonResponse({"status": "error"})
