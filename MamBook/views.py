@@ -260,9 +260,37 @@ def profile_check(request, request_token):
                 return objects
 
 
-def convert_date(string_date):
+def convert_to_date(string_date):
     string = string_date.split('-')
     return date(year=int(string[0]), month=int(string[1]), day=int(string[2]))
+
+
+def get_age(birthday, current_date):
+    age = dict()
+    years = int()
+    months = int()
+    days = int()
+
+    if birthday and current_date:
+        years = current_date.year - birthday.year
+
+        if current_date.month > birthday.month:
+            months = current_date.month - birthday.month
+        else:
+            months = 12 - (birthday.month - current_date.month)
+            years -= 1
+
+        if current_date.day > birthday.day:
+            days = current_date.day - birthday.day
+        else:
+            days = 30 - (birthday.day - current_date.day)
+            months -= 1
+
+    age['years'] = years
+    age['months'] = months
+    age['days'] = days
+
+    return age
 
 
 def upload_baby_profile(request):
@@ -270,10 +298,17 @@ def upload_baby_profile(request):
         request_token = request.POST['request_token']
         objects = profile_check(request=request, request_token=request_token)
         if objects and objects != 1:
+            birthday = convert_to_date(request.POST['birthday'])
+            current_date = convert_to_date(request.POST['current_date'])  # or date.today()
+            age = get_age(birthday, current_date)
+
             baby = Baby.objects.update_or_create(parent=objects['profile'],
-                                                 birthday=convert_date(request.POST['birthday']),
-                                                 current_age=convert_date(request.POST['current_age']),
-                                                 name=request.POST['name'])
+                                                 birthday=birthday,
+                                                 current_date=current_date,
+                                                 name=request.POST['name'],
+                                                 years=age['years'],
+                                                 months=age['months'],
+                                                 days=age['days'])
             baby.save()
         else:
             return JsonResponse({"error": "object profile for current user does not exist"})

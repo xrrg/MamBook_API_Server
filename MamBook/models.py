@@ -23,8 +23,11 @@ class Baby(models.Model):
 
     parent = models.ForeignKey(Profile)
     birthday = models.DateField()
-    current_age = models.DateField()
+    current_date = models.DateField()
     name = models.CharField(max_length=50)
+    years = models.IntegerField()
+    months = models.IntegerField()
+    days = models.IntegerField()
 
     def __str__(self):
         return self.name
