@@ -25,7 +25,6 @@ class Baby(models.Model):
     birthday = models.DateField()
     current_age = models.DateField()
     name = models.CharField(max_length=50)
-    avatar = models.ImageField()
 
     def __str__(self):
         return self.name
@@ -40,6 +39,7 @@ class Achievement(models.Model):  # all achievements in db
     year = models.IntegerField()
     month = models.IntegerField()
     number = models.IntegerField()
+    version = models.CharField(max_length=50)
 
     def __str__(self):
         return self.title
@@ -64,6 +64,7 @@ class Category(models.Model):  # parsed
         db_table = 'category'
 
     name = models.CharField(max_length=100)
+    version = models.CharField(max_length=50)
 
     def __str__(self):
         return self.name
@@ -81,6 +82,7 @@ class Progress(models.Model):  # parsed
     category = models.ForeignKey(Category)
     do_advice = models.TextField()
     not_do_advice = models.TextField()
+    version = models.CharField(max_length=50)
 
     def __str__(self):
         return self.title
@@ -93,6 +95,7 @@ class SelfDevelopment(models.Model):  # parsed
     title = models.CharField(max_length=256)
     content = models.TextField()
     day = models.IntegerField()
+    version = models.CharField(max_length=50)
 
     def __str__(self):
         return self.title

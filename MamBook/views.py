@@ -5,54 +5,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from MamBook.models import *
 from django.contrib import auth
+from datetime import date
 import hashlib
 import random
-import xlrd
 import json
 from unidecode import unidecode
 # Create your views here.
-
-
-def parse():  # parse data from xml file
-    rd = xlrd.open_workbook('/home/gambrinius/PycharmProjects/MamBook_API_Server/Развивайка0-3.xls',
-                            formatting_info=True)  # change file name to current parse
-
-    sheet = rd.sheet_by_index(0)
-
-    values = [sheet.row_values(row_num) for row_num in range(sheet.nrows)]
-    category_list = []
-
-    for value in values:  # change values of file parse
-        year = value[0]
-        month = value[1]
-        day = value[2]
-        title = value[3]
-        text = value[4]
-        category = value[5]
-        category_list.append(category)
-
-        try:    # select needs parsing Object
-            Progress(title=title, content=text, year=int(year), day=int(day), month=int(month),
-                     category=Category.objects.get(name=category),
-                     do_advice='Well done!', not_do_advice='You failed.').save()
-        except Exception:
-            pass
-
-        try:
-            pass  # Achievement(title=title, content=text, year=year, month=month, number=number).save()
-        except Exception:
-            pass
-
-        try:
-            pass  # SelfDevelopment(title=title, content=text, day=day).save()
-        except Exception:
-            pass
-
-    category_set = set(category_list)
-    category_set.remove('')
-
-    for category in category_set:
-        Category(name=category).save()
 
 
 def initialize(request):  # load main.html
@@ -231,7 +189,7 @@ def register(request):
         new_profile = Profile(owner=new_user, csrf_token=token)
         new_profile.save()
 
-        return JsonResponse({"status": "success"})
+        return JsonResponse({"status": "success", "token": token})
     else:
         return JsonResponse({"status": "error"})
 
@@ -302,14 +260,20 @@ def profile_check(request, request_token):
                 return objects
 
 
+def convert_date(string_date):
+    string = string_date.split('-')
+    return date(year=int(string[0]), month=int(string[1]), day=int(string[2]))
+
+
 def upload_baby_profile(request):
     if request.method == 'POST':
         request_token = request.POST['request_token']
         objects = profile_check(request=request, request_token=request_token)
         if objects and objects != 1:
-            baby = Baby.objects.update_or_create(parent=objects['profile'], birthday=request.POST['birthday'],
-                                                 current_age=request.POST['current_age'], name=request.POST['name'],
-                                                 avatar=request.POST['avatar'])
+            baby = Baby.objects.update_or_create(parent=objects['profile'],
+                                                 birthday=convert_date(request.POST['birthday']),
+                                                 current_age=convert_date(request.POST['current_age']),
+                                                 name=request.POST['name'])
             baby.save()
         else:
             return JsonResponse({"error": "object profile for current user does not exist"})
