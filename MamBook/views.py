@@ -226,7 +226,7 @@ def upload_new_achievement(request):
         baby_id = data['baby_id']
         request_token = data['request_token']
         objects = auth_check(request=request, baby_id=baby_id, request_token=request_token)
-        if objects:
+        if objects and objects != 1:
             new_record = BabyAchievements(id_child=Baby.objects.get(pk=baby_id),
                                           id_achievement=Achievement.objects.get(pk=data['achievement_id']),
                                           activation_date=timezone.now(),
@@ -235,8 +235,7 @@ def upload_new_achievement(request):
             new_record.save()
             return JsonResponse({"status": "success"})
         else:
-            raise Http404()
-
+            return JsonResponse({"status": "auth_error"})
     else:
         return JsonResponse({"status": "error"})
 
